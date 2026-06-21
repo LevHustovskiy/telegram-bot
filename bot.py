@@ -26,6 +26,7 @@ async def cmd_start(message: types.Message) -> None:
         "/list — показать задачи\n"
         "/done 2 — отметить задачу №2 выполненной\n"
         "/delete 2 — удалить задачу №2\n"
+        "/remind 30 позвонить маме — напомнить через 30 минут\n"
         "/help - список команд"
     )
 
@@ -83,6 +84,24 @@ async def cmd_done(message: types.Message, command: CommandObject) -> None:
 
     user_tasks.remove(user_tasks[index - 1])
     await message.answer(f"Задача №{index} удалена ❌")
+
+@dp.message(Command("remind"))
+async def cmd_remind(message: types.Message, command: CommandObject) -> None:
+
+    parts = (command.args or "").split(maxsplit=1)
+    if len(parts) < 2 or not parts[0].isdigit():
+        await message.answer("Формат: /remind 30 позвонить маме")
+        return
+
+    minutes, text = int(parts[0]), parts[1]
+
+    await message.answer(f"Хорошо, напомню через {minutes} мин: {text}")
+    asyncio.create_task(send_reminder(message.bot, message.chat.id, minutes, text))
+
+
+async def send_reminder(bot: Bot, chat_id: int, minutes: int, text: str) -> None:
+    await asyncio.sleep(minutes * 60)
+    await bot.send_message(chat_id, f"🔔 Напоминание: {text}")
 
 async def main() -> None:
     if not TOKEN:
