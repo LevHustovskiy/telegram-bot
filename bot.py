@@ -94,6 +94,9 @@ async def cmd_remind(message: types.Message, command: CommandObject) -> None:
         return
 
     minutes, text = int(parts[0]), parts[1]
+    if not 1 <= minutes <= 24 * 60:
+        await message.answer("Время — от 1 минуты до 24 часов.")
+        return
 
     await message.answer(f"Хорошо, напомню через {minutes} мин: {text}")
     asyncio.create_task(send_reminder(message.bot, message.chat.id, minutes, text))
